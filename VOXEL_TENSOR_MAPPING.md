@@ -25,7 +25,7 @@ The **Voxel-Tensor Mapping** defines how an agent's continuous phase-space manif
 
 The agent exists in a 4D phase-space manifold `M ⊂ ℝ⁴`:
 
-```
+```text
 M = {(φ, ψ, ω, τ) : φ ∈ [0, 2π], ψ ∈ [0, 1], ω ∈ [0, ω_max], τ ∈ ℝ}
 ```
 
@@ -121,7 +121,7 @@ where:
 ### Occupancy Rules
 
 | Condition | Occupancy |
-|-----------|-----------|
+| ----------- | ----------- |
 | Agent current position | 1 |
 | Obstacle | 1 |
 | Corridor boundary | 1 |
@@ -168,7 +168,7 @@ def neighborhood_to_bitvector(neighborhood: np.ndarray) -> int:
     bitvector = 0
     for i, bit in enumerate(flat):
         if bit:
-            bitvector |= (1 << i)
+ bitvector | = (1 << i) 
     return bitvector
 ```
 
@@ -199,7 +199,7 @@ Where `C` is the number of channels (features per voxel).
 ### Multi-Channel Voxels
 
 | Channel | Feature |
-|---------|---------|
+| --------- | --------- |
 | 0 | Occupancy (0 or 1) |
 | 1 | Agent distance (normalized) |
 | 2 | Obstacle distance (normalized) |

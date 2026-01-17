@@ -26,7 +26,7 @@ The **Replay Court** is a deterministic system for reconstructing agent trajecto
 
 Given a sequence of token pixels:
 
-```
+```text
 Σ = {TPX_1, TPX_2, ..., TPX_n}
 ```
 

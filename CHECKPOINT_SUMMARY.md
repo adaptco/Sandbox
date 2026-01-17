@@ -10,7 +10,7 @@ Successfully generated and committed a **Token Pixel Checkpoint System** for age
 
 ### Checkpoint ID
 
-```
+```text
 ckpt_2026-01-17T21-46-04-579Z
 ```
 
@@ -89,7 +89,7 @@ ckpt_2026-01-17T21-46-04-579Z
 3. `req_003` - Capture game entities (Priority 2)
 4. `req_004` - Write checkpoint to edge storage (Priority 3)
 
-**Reaction Mixtures:**
+### Reaction Mixtures:
 
 - `snapshot_generation`: [req_001, req_002, req_003]
 - `checkpoint_persistence`: [req_004]
@@ -119,7 +119,7 @@ ckpt_2026-01-17T21-46-04-579Z
 ## ⚛️ Atomic Guarantees (ACID)
 
 | Property | Implementation |
-|----------|---------------|
+| ---------- | --------------- |
 | **Atomicity** | All-or-nothing request execution |
 | **Consistency** | Sequential consistency model |
 | **Isolation** | Snapshot isolation level |
@@ -148,7 +148,7 @@ playing ──[lives_depleted]──> gameOver
 ## 📈 Metrics
 
 | Metric | Value |
-|--------|-------|
+| -------- | ------- |
 | State Variables | 10 |
 | Files Analyzed | 2 |
 | State Atoms | 6 |

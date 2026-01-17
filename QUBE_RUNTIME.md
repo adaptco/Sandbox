@@ -28,7 +28,7 @@ The **Qube-Native Token Pixel Runtime** is a minimal, edge-optimized execution e
 
 A **Qube** is the minimal execution unit:
 
-```
+```text
 ┌─────────────────────────────┐
 │       QUBE RUNTIME          │
 ├─────────────────────────────┤
@@ -472,7 +472,7 @@ with open("checkpoints/pixels_AGENT_QUBE_07.jsonl") as f:
 ### Benchmarks (single-threaded, laptop CPU)
 
 | Operation | Time | Memory |
-|-----------|------|--------|
+| ----------- | ------ | -------- |
 | Parse token pixel | 0.05ms | 1 KB |
 | Interpret state vector | 0.01ms | 0.5 KB |
 | Navigate corridor | 0.10ms | 2 KB |

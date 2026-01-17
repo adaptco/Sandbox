@@ -17,7 +17,7 @@ The **CI/CD Integration Layer** embeds the Token Pixel Checkpointing System into
 
 ## 🏗️ **Pipeline Architecture**
 
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │              Agentic CI/CD Pipeline                      │
 └──────────────────────────────────────────────────────────┘
@@ -44,7 +44,7 @@ The **CI/CD Integration Layer** embeds the Token Pixel Checkpointing System into
 ### Districts
 
 | District | Purpose | Checkpoint Trigger |
-|----------|---------|-------------------|
+| ---------- | --------- | ------------------- |
 | **DISTRICT_1** | Ingestion (RAG/Docling) | After document processing |
 | **DISTRICT_2** | LoRA Bias Application | After weight update |
 | **DISTRICT_3** | Routing Kernel | After intent resolution |
@@ -336,11 +336,11 @@ jobs:
           python-version: '3.11'
       
       - name: Initialize Agent
-        run: |
+ run: |
           python scripts/init_agent.py --agent-id AGENT_CICD_${{ github.run_id }}
       
       - name: Ingestion Gate (DISTRICT_1)
-        run: |
+ run: |
           python scripts/ingestion_gate.py \
             --checkpoint-enabled \
             --corridor "DISTRICT_1.CHAMBER_0.NODE_GH_ACTIONS"
@@ -361,7 +361,7 @@ jobs:
           name: checkpoints-ingestion
       
       - name: LoRA Bias Application (DISTRICT_2)
-        run: |
+ run: |
           python scripts/apply_lora.py \
             --checkpoint-enabled \
             --corridor "DISTRICT_2.CHAMBER_LORA.NODE_GH_ACTIONS"

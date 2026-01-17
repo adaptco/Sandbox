@@ -245,7 +245,7 @@ Every component adheres to:
 
 Agents exist in 4D manifold M ⊂ ℝ⁴:
 
-```
+```text
 M = {(φ, ψ, ω, τ) : φ ∈ [0, 2π], ψ ∈ [0, 1], ω ∈ [0, ω_max], τ ∈ ℝ}
 ```
 
@@ -316,7 +316,7 @@ AUDIT REPORT
 ### Checkpoint Generation
 
 | Metric | Value |
-|--------|-------|
+| -------- | ------- |
 | Canonicalization time | ~1ms |
 | Parity check time | ~0.5ms |
 | Hash computation time | ~2ms |
@@ -326,7 +326,7 @@ AUDIT REPORT
 ### Replay Court
 
 | Operation | Time (per 1000 pixels) |
-|-----------|------------------------|
+| ----------- | ------------------------ |
 | Hash chain validation | ~50ms |
 | State reconstruction | ~100ms |
 | Trajectory visualization | ~500ms |
@@ -335,7 +335,7 @@ AUDIT REPORT
 ### Edge Runtime
 
 | Metric | Value |
-|--------|-------|
+| -------- | ------- |
 | Memory footprint | 8.2 MB |
 | Pixel parse time | 0.05ms |
 | Decision time | 0.20ms |
@@ -444,7 +444,7 @@ Detect tampered agent trajectories in adversarial environments.
 
 ## 🔐 **License**
 
-**Corridor-Grade Invariant License v1.0**
+### Corridor-Grade Invariant License v1.0
 
 All specifications in this system are ratified under the Corridor-Grade Invariant License, which guarantees:
 

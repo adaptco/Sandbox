@@ -29,7 +29,7 @@ The ritual transforms an agent's volatile runtime state into a **corridor-grade 
 
 ## 🔄 **The Four Phases**
 
-```
+```text
 AGENT STATE
     ↓
 [1] CANONICALIZATION   ─→  Normalized state representation
@@ -395,7 +395,7 @@ class RitualMetrics:
 ## ⚠️ **Failure Modes**
 
 | Failure | Phase | Action |
-|---------|-------|--------|
+| --------- | ------- | -------- |
 | Invalid state vector | 1 | ABORT, log error |
 | Corridor unreachable | 1 | ABORT, log error |
 | Parity check failed | 2 | QUARANTINE, escalate |

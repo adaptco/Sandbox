@@ -15,7 +15,7 @@ A **Token Pixel** is a minimal, lossless, hash-anchored representation of an age
 
 ### Mathematical Formulation
 
-```
+```text
 TokenPixel_t = (S_t, C_t, I_t, E_t, A_t, V_t, H_t)
 
 where:
@@ -37,7 +37,7 @@ where:
 The agent's current tensor state in phase-space coordinates:
 
 | Component | Domain | Semantic | Canonical Range |
-|-----------|--------|----------|-----------------|
+| ----------- | -------- | ---------- | ----------------- |
 | **φ** (phi) | [0, 2π] | Corridor phase angle | Cyclic, modulo 2π |
 | **ψ** (psi) | [0, 1] | Intent alignment | 0=misaligned, 1=perfect |
 | **ω** (omega) | [0, ∞) | Angular velocity | Event production rate |
@@ -102,7 +102,7 @@ A normalized, hashed representation of the agent's active intent embedding.
 **Construction**:
 
 1. Extract intent vector `i ∈ ℝⁿ` from agent's current goal
-2. Normalize: `î = i / ||i||₂`
+ 2. Normalize: `î = i / |  | i |  | ₂` 
 3. Quantize to fixed precision (8 decimal places)
 4. Hash: `H(î) = sha256(serialize(î))`
 
@@ -155,7 +155,7 @@ A scalar `A ∈ [0, 1]` measuring deviation from programmed behavior.
 **Definition**:
 
 ```
-A = ||s_actual - s_expected||₂ / ||s_expected||₂
+ A = |  | s_actual - s_expected |  | ₂ / |  | s_expected |  | ₂ 
 ```
 
 Where:
@@ -166,7 +166,7 @@ Where:
 **Interpretation**:
 
 | Range | Classification | Action |
-|-------|----------------|--------|
+| ------- | ---------------- | -------- |
 | [0, 0.1] | **Nominal** | Continue |
 | (0.1, 0.3] | **Deviation** | Log warning |
 | (0.3, 0.7] | **Drift** | Trigger review |
@@ -433,7 +433,7 @@ Hash chain provides tamper-evident log of all agent states.
 ## 🔄 **Version History**
 
 | Version | Date | Changes |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | 1.0.0 | 2026-01-17 | Initial canonical specification |
 
 ---
