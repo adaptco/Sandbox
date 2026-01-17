@@ -1,6 +1,6 @@
-{"type":"state_atom","id":"player_state","properties":{"position":"vec2","velocity":"vec2","jumping":"bool","gravity":"float","jumpPower":"float","speed":"float"},"timestamp":"2026-01-17T21-46-04-579Z"}
-{"type":"state_atom","id":"obstacle_state","properties":{"collection":"array","spawn_rate":"function","speed":"float","size":"int"},"timestamp":"2026-01-17T21-46-04-579Z"}
-{"type":"state_atom","id":"egg_state","properties":{"collection":"array","spawn_rate":"function","speed":"float"},"timestamp":"2026-01-17T21-46-04-579Z"}
-{"type":"state_atom","id":"particle_state","properties":{"collection":"array","lifecycle":"function","physics":"vec2"},"timestamp":"2026-01-17T21-46-04-579Z"}
-{"type":"state_atom","id":"game_state","properties":{"score":"int","lives":"int","level":"int","status":"enum"},"timestamp":"2026-01-17T21-46-04-579Z"}
-{"type":"state_atom","id":"physics_engine","properties":{"gravity":"float","collision_detection":"function","frame_updates":"function"},"timestamp":"2026-01-17T21-46-04-579Z"}
+{"type":"state_atom","id":"player_state","properties":{"position":"vec2","velocity":"vec2","jumping":"bool","gravity":"float","jumpPower":"float","speed":"float"},"timestamp":"2026-01-17T22-15-45-454Z"}
+{"type":"state_atom","id":"obstacle_state","properties":{"collection":"array","spawn_rate":"function","speed":"float","size":"int"},"timestamp":"2026-01-17T22-15-45-454Z"}
+{"type":"state_atom","id":"egg_state","properties":{"collection":"array","spawn_rate":"function","speed":"float"},"timestamp":"2026-01-17T22-15-45-454Z"}
+{"type":"state_atom","id":"particle_state","properties":{"collection":"array","lifecycle":"function","physics":"vec2"},"timestamp":"2026-01-17T22-15-45-454Z"}
+{"type":"state_atom","id":"game_state","properties":{"score":"int","lives":"int","level":"int","status":"enum"},"timestamp":"2026-01-17T22-15-45-454Z"}
+{"type":"state_atom","id":"physics_engine","properties":{"gravity":"float","collision_detection":"function","frame_updates":"function"},"timestamp":"2026-01-17T22-15-45-454Z"}

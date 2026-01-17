@@ -1,7 +1,7 @@
 {
   "mixture_type": "state_checkpoint",
   "linearization_strategy": "sequential_atomic",
-  "checkpoint_id": "ckpt_2026-01-17T21-46-04-579Z",
+  "checkpoint_id": "ckpt_2026-01-17T22-15-45-454Z",
   "request_queue": [
     {
       "id": "req_001",
