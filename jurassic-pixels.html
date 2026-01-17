@@ -93,8 +93,11 @@
                 inset 0 0 20px rgba(0, 0, 0, 0.3);
             background: #000;
             image-rendering: -webkit-optimize-contrast;
+            /* Edge 79+ */
             image-rendering: pixelated;
+            /* Modern browsers */
             image-rendering: crisp-edges;
+            /* Standards fallback */
         }
 
         .game-stats {
