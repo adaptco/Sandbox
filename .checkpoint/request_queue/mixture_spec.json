@@ -1,0 +1,67 @@
+{
+  "mixture_type": "state_checkpoint",
+  "linearization_strategy": "sequential_atomic",
+  "checkpoint_id": "ckpt_2026-01-17T21-46-04-579Z",
+  "request_queue": [
+    {
+      "id": "req_001",
+      "type": "state_capture",
+      "priority": 1,
+      "atomic": true,
+      "payload": {
+        "target": "player_state",
+        "operation": "snapshot",
+        "format": "token_pixel"
+      }
+    },
+    {
+      "id": "req_002",
+      "type": "state_capture",
+      "priority": 1,
+      "atomic": true,
+      "payload": {
+        "target": "physics_engine",
+        "operation": "snapshot",
+        "format": "token_pixel"
+      }
+    },
+    {
+      "id": "req_003",
+      "type": "state_capture",
+      "priority": 2,
+      "atomic": true,
+      "payload": {
+        "target": "game_entities",
+        "operation": "snapshot",
+        "format": "token_pixel"
+      }
+    },
+    {
+      "id": "req_004",
+      "type": "checkpoint_write",
+      "priority": 3,
+      "atomic": true,
+      "payload": {
+        "destination": "edge_storage",
+        "compression": "token_compressed",
+        "format": "binary_token_stream"
+      }
+    }
+  ],
+  "reaction_mixtures": {
+    "snapshot_generation": [
+      "req_001",
+      "req_002",
+      "req_003"
+    ],
+    "checkpoint_persistence": [
+      "req_004"
+    ],
+    "edge_deployment": [
+      "req_001",
+      "req_002",
+      "req_003",
+      "req_004"
+    ]
+  }
+}

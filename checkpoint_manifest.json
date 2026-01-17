@@ -1,0 +1,22 @@
+{
+  "checkpoint_id": "ckpt_2026-01-17T21-46-04-579Z",
+  "commit": "6502f962609757e97ce9a18f672ccb15c800579f",
+  "branch": "main",
+  "timestamp": "2026-01-17T21-46-04-579Z",
+  "format": "token_pixel_v1",
+  "components": {
+    "state_inventory": ".checkpoint/metadata/state_inventory.json",
+    "token_pixels": ".checkpoint/token_pixels/state_tokens.jsonl",
+    "pixel_grid": ".checkpoint/token_pixels/pixel_grid.json",
+    "request_queue": ".checkpoint/request_queue/mixture_spec.json",
+    "edge_agent": ".checkpoint/edge_agent/atomic_agent.json"
+  },
+  "metrics": {
+    "state_variables": 10,
+    "files_analyzed": 2,
+    "state_atoms": 6,
+    "request_queue_size": 4
+  },
+  "atomic_guarantees": true,
+  "edge_ready": true
+}

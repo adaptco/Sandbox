@@ -1,0 +1,68 @@
+{
+  "checkpoint_format": "token_pixel_v1",
+  "checkpoint_id": "ckpt_2026-01-17T21-46-04-579Z",
+  "state_space_grid": {
+    "dimensions": {
+      "width": 800,
+      "height": 500
+    },
+    "pixel_states": {
+      "player_region": {
+        "x": 100,
+        "y": 400,
+        "w": 40,
+        "h": 50,
+        "state": "active"
+      },
+      "obstacle_lane": {
+        "x": 800,
+        "y": 415,
+        "w": 35,
+        "h": 35,
+        "state": "spawning"
+      },
+      "collectible_space": {
+        "x": 800,
+        "y": 320,
+        "w": 20,
+        "h": 20,
+        "state": "spawning"
+      },
+      "ground_plane": {
+        "x": 0,
+        "y": 450,
+        "w": 800,
+        "h": 50,
+        "state": "static"
+      }
+    },
+    "state_transitions": [
+      {
+        "from": "idle",
+        "to": "jumping",
+        "trigger": "space_key"
+      },
+      {
+        "from": "jumping",
+        "to": "falling",
+        "trigger": "apex_reached"
+      },
+      {
+        "from": "falling",
+        "to": "idle",
+        "trigger": "ground_collision"
+      },
+      {
+        "from": "playing",
+        "to": "gameOver",
+        "trigger": "lives_depleted"
+      }
+    ]
+  },
+  "atomic_operations": {
+    "collision_check": "atomic",
+    "score_update": "atomic",
+    "state_transition": "atomic",
+    "particle_spawn": "atomic"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "agent_type": "atomic_state_checkpoint",
+  "version": "1.0.0",
+  "architecture": "edge_optimized",
+  "checkpoint_id": "ckpt_2026-01-17T21-46-04-579Z",
+  "capabilities": {
+    "state_serialization": true,
+    "token_pixel_generation": true,
+    "atomic_operations": true,
+    "async_linearization": true,
+    "edge_deployment": true
+  },
+  "token_pixel_config": {
+    "pixel_format": "state_atom",
+    "encoding": "jsonl",
+    "compression": "token_stream",
+    "max_tokens_per_snapshot": 4096,
+    "embedding_dimension": 768
+  },
+  "atomic_guarantees": {
+    "consistency": "sequential_consistency",
+    "isolation": "snapshot_isolation",
+    "durability": "checkpoint_persisted",
+    "atomicity": "all_or_nothing"
+  },
+  "edge_optimization": {
+    "memory_footprint": "minimal",
+    "cpu_usage": "low_priority",
+    "network_bandwidth": "compressed_stream",
+    "storage_format": "incremental_delta"
+  }
+}
