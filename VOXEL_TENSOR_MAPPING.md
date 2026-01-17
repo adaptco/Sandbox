@@ -2,9 +2,9 @@
 
 ## Manifold Neighborhood Discretization for Edge Agents
 
-**Status**: `CANONICAL`  
-**Version**: `1.0.0`  
-**Spec Hash**: `sha256:VOXEL_SPEC_V1_0x7B4C`  
+**Status**: `CANONICAL`
+**Version**: `1.0.0`
+**Spec Hash**: `sha256:VOXEL_SPEC_V1_0x7B4C`
 **Ratified**: `2026-01-17T21:48:40Z`
 
 ---
@@ -39,7 +39,7 @@ This continuous manifold is discretized into a **voxel grid** for computational 
 
 The voxel grid `G` is a 4D tensor:
 
-```
+```text
 G ∈ {0, 1}^{N_φ × N_ψ × N_ω × N_τ}
 ```
 
@@ -63,7 +63,7 @@ VOXEL_RESOLUTION = {
 
 ### Voxel Size
 
-```
+```text
 Δφ = 2π / N_φ ≈ 0.098 radians
 Δψ = 1 / N_ψ = 0.03125
 Δω = ω_max / N_ω
@@ -85,7 +85,7 @@ def continuous_to_voxel(state: StateVector, resolution: dict) -> VoxelCoord:
     i_psi = int(state.psi * resolution["psi"])
     i_omega = int((state.omega / OMEGA_MAX) * resolution["omega"])
     i_tau = int((state.tau % TAU_WINDOW) / TAU_WINDOW * resolution["tau"])
-    
+
     return VoxelCoord(i_phi, i_psi, i_omega, i_tau)
 ```
 
@@ -100,7 +100,7 @@ def voxel_to_continuous(voxel: VoxelCoord, resolution: dict) -> StateVector:
     psi = (voxel.i_psi + 0.5) / resolution["psi"]
     omega = (voxel.i_omega + 0.5) * OMEGA_MAX / resolution["omega"]
     tau = (voxel.i_tau + 0.5) * TAU_WINDOW / resolution["tau"]
-    
+
     return StateVector(phi, psi, omega, tau)
 ```
 
@@ -110,7 +110,7 @@ def voxel_to_continuous(voxel: VoxelCoord, resolution: dict) -> StateVector:
 
 Each voxel has a binary occupancy state:
 
-```
+```text
 G[i, j, k, l] ∈ {0, 1}
 
 where:
@@ -139,9 +139,9 @@ For the token pixel `voxelSignature`, we sample a **3×3×3 cube** around the ag
 def sample_neighborhood_3x3x3(agent_voxel: VoxelCoord, grid: np.ndarray) -> np.ndarray:
     """Sample 27 voxels around agent (excluding tau dimension)."""
     i, j, k = agent_voxel.i_phi, agent_voxel.i_psi, agent_voxel.i_omega
-    
+
     neighborhood = np.zeros((3, 3, 3), dtype=np.uint8)
-    
+
     for di in range(-1, 2):
         for dj in range(-1, 2):
             for dk in range(-1, 2):
@@ -149,11 +149,11 @@ def sample_neighborhood_3x3x3(agent_voxel: VoxelCoord, grid: np.ndarray) -> np.n
                 i_sample = (i + di) % grid.shape[0]
                 j_sample = np.clip(j + dj, 0, grid.shape[1] - 1)
                 k_sample = np.clip(k + dk, 0, grid.shape[2] - 1)
-                
+
                 # Average over tau dimension
                 occupancy = np.mean(grid[i_sample, j_sample, k_sample, :])
                 neighborhood[di + 1, dj + 1, dk + 1] = 1 if occupancy > 0.5 else 0
-    
+
     return neighborhood
 ```
 
@@ -168,7 +168,7 @@ def neighborhood_to_bitvector(neighborhood: np.ndarray) -> int:
     bitvector = 0
     for i, bit in enumerate(flat):
         if bit:
- bitvector | = (1 << i) 
+ bitvector | = (1 << i)
     return bitvector
 ```
 
@@ -213,27 +213,27 @@ def construct_voxel_tensor(agent: Agent, grid: np.ndarray) -> np.ndarray:
     """Build multi-channel voxel tensor."""
     N_phi, N_psi, N_omega, N_tau = grid.shape
     C = 5  # number of channels
-    
+
     tensor = np.zeros((N_phi, N_psi, N_omega, N_tau, C))
-    
+
     # Channel 0: Occupancy
     tensor[:, :, :, :, 0] = grid
-    
+
     # Channel 1: Agent distance field
     agent_voxel = continuous_to_voxel(agent.state_vector, VOXEL_RESOLUTION)
     tensor[:, :, :, :, 1] = compute_distance_field(agent_voxel, grid.shape)
-    
+
     # Channel 2: Obstacle distance field
     obstacles = get_obstacle_voxels(grid)
     tensor[:, :, :, :, 2] = compute_multi_distance_field(obstacles, grid.shape)
-    
+
     # Channel 3: Boundary distance field
     boundaries = get_boundary_voxels(grid)
     tensor[:, :, :, :, 3] = compute_multi_distance_field(boundaries, grid.shape)
-    
+
     # Channel 4: Intent alignment projection
     tensor[:, :, :, :, 4] = project_intent_alignment(agent, grid.shape)
-    
+
     return tensor
 ```
 
@@ -255,7 +255,7 @@ def compute_distance_field(center: VoxelCoord, shape: tuple) -> np.ndarray:
         np.arange(shape[3]),
         indexing='ij'
     )
-    
+
     # Periodic distance in φ dimension
     d_phi = np.minimum(
         np.abs(i_grid - center.i_phi),
@@ -264,9 +264,9 @@ def compute_distance_field(center: VoxelCoord, shape: tuple) -> np.ndarray:
     d_psi = np.abs(j_grid - center.i_psi)
     d_omega = np.abs(k_grid - center.i_omega)
     d_tau = np.abs(l_grid - center.i_tau)
-    
+
     distance = np.sqrt(d_phi**2 + d_psi**2 + d_omega**2 + d_tau**2)
-    
+
     # Normalize to [0, 1]
     return distance / np.max(distance)
 ```
@@ -282,10 +282,10 @@ def voxel_ray_cast(start: VoxelCoord, direction: np.ndarray, grid: np.ndarray, m
     """Cast a ray through voxel grid until hitting an obstacle."""
     current = np.array([start.i_phi, start.i_psi, start.i_omega, start.i_tau], dtype=float)
     direction_normalized = direction / np.linalg.norm(direction)
-    
+
     for step in range(max_steps):
         current += direction_normalized
-        
+
         # Convert to integer voxel coordinates
         voxel = VoxelCoord(
             int(current[0]) % grid.shape[0],
@@ -293,11 +293,11 @@ def voxel_ray_cast(start: VoxelCoord, direction: np.ndarray, grid: np.ndarray, m
             int(np.clip(current[2], 0, grid.shape[2] - 1)),
             int(np.clip(current[3], 0, grid.shape[3] - 1))
         )
-        
+
         # Check occupancy
         if grid[voxel.i_phi, voxel.i_psi, voxel.i_omega, voxel.i_tau]:
             return voxel
-    
+
     return None  # No collision
 ```
 
@@ -308,14 +308,14 @@ def check_swept_collision(start: StateVector, end: StateVector, grid: np.ndarray
     """Check if trajectory from start to end collides with obstacles."""
     start_voxel = continuous_to_voxel(start, VOXEL_RESOLUTION)
     end_voxel = continuous_to_voxel(end, VOXEL_RESOLUTION)
-    
+
     direction = np.array([
         end_voxel.i_phi - start_voxel.i_phi,
         end_voxel.i_psi - start_voxel.i_psi,
         end_voxel.i_omega - start_voxel.i_omega,
         end_voxel.i_tau - start_voxel.i_tau
     ])
-    
+
     collision = voxel_ray_cast(start_voxel, direction, grid)
     return collision is not None
 ```
@@ -328,7 +328,7 @@ def check_swept_collision(start: StateVector, end: StateVector, grid: np.ndarray
 def voxel_astar(start: VoxelCoord, goal: VoxelCoord, grid: np.ndarray) -> List[VoxelCoord]:
     """A* pathfinding over voxel grid."""
     from heapq import heappush, heappop
-    
+
     def heuristic(a: VoxelCoord, b: VoxelCoord) -> float:
         """Euclidean distance heuristic."""
         return np.sqrt(
@@ -337,16 +337,16 @@ def voxel_astar(start: VoxelCoord, goal: VoxelCoord, grid: np.ndarray) -> List[V
             (a.i_omega - b.i_omega)**2 +
             (a.i_tau - b.i_tau)**2
         )
-    
+
     open_set = []
     heappush(open_set, (0, start))
     came_from = {}
     g_score = {start: 0}
     f_score = {start: heuristic(start, goal)}
-    
+
     while open_set:
         _, current = heappop(open_set)
-        
+
         if current == goal:
             # Reconstruct path
             path = [current]
@@ -354,19 +354,19 @@ def voxel_astar(start: VoxelCoord, goal: VoxelCoord, grid: np.ndarray) -> List[V
                 current = came_from[current]
                 path.append(current)
             return list(reversed(path))
-        
+
         for neighbor in get_voxel_neighbors(current, grid):
             if grid[neighbor.i_phi, neighbor.i_psi, neighbor.i_omega, neighbor.i_tau]:
                 continue  # Skip occupied voxels
-            
+
             tentative_g = g_score[current] + 1
-            
+
             if neighbor not in g_score or tentative_g < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g
                 f_score[neighbor] = tentative_g + heuristic(neighbor, goal)
                 heappush(open_set, (f_score[neighbor], neighbor))
-    
+
     return []  # No path found
 ```
 
@@ -380,13 +380,13 @@ Voxel neighborhoods estimate local curvature:
 def estimate_gaussian_curvature(voxel: VoxelCoord, grid: np.ndarray) -> float:
     """Estimate Gaussian curvature from voxel neighborhood."""
     neighborhood = sample_neighborhood_3x3x3(voxel, grid)
-    
+
     # Count occupied neighbors
     occupancy_count = np.sum(neighborhood)
-    
+
     # Curvature proxy: deviation from flat (13.5 expected if uniform)
     curvature = abs(occupancy_count - 13.5) / 13.5
-    
+
     return curvature
 ```
 
@@ -403,10 +403,10 @@ def compress_voxel_grid_rle(grid: np.ndarray) -> bytes:
     """Run-length encoding for sparse voxel grids."""
     flat = grid.flatten()
     compressed = []
-    
+
     current_val = flat[0]
     run_length = 1
-    
+
     for val in flat[1:]:
         if val == current_val:
             run_length += 1
@@ -414,9 +414,9 @@ def compress_voxel_grid_rle(grid: np.ndarray) -> bytes:
             compressed.append((current_val, run_length))
             current_val = val
             run_length = 1
-    
+
     compressed.append((current_val, run_length))
-    
+
     return pickle.dumps(compressed)
 ```
 
@@ -429,27 +429,27 @@ Small models can work with voxel subsets:
 ```python
 class EdgeVoxelAgent:
     """Minimal voxel-aware agent for edge deployment."""
-    
+
     def __init__(self, window_size: int = 7):
         self.window_size = window_size  # 7×7×7 local window
-    
+
     def get_local_voxels(self, agent_voxel: VoxelCoord, full_grid: np.ndarray) -> np.ndarray:
         """Extract local voxel window around agent."""
         w = self.window_size // 2
-        
+
         local = np.zeros((self.window_size,) * 3)
-        
+
         for di in range(-w, w + 1):
             for dj in range(-w, w + 1):
                 for dk in range(-w, w + 1):
                     i = (agent_voxel.i_phi + di) % full_grid.shape[0]
                     j = np.clip(agent_voxel.i_psi + dj, 0, full_grid.shape[1] - 1)
                     k = np.clip(agent_voxel.i_omega + dk, 0, full_grid.shape[2] - 1)
-                    
+
                     local[di + w, dj + w, dk + w] = np.mean(full_grid[i, j, k, :])
-        
+
         return local
-    
+
     def compute_safe_direction(self, local_voxels: np.ndarray) -> np.ndarray:
         """Find safest direction in local voxel neighborhood."""
         # Simple gradient descent away from obstacles
@@ -491,6 +491,6 @@ Voxel signature fits in < 64 bytes.
 
 ---
 
-**Spec Authority**: Voxel-Tensor Mapping Committee  
-**Maintainer**: Agentic CI/CD Working Group  
+**Spec Authority**: Voxel-Tensor Mapping Committee
+**Maintainer**: Agentic CI/CD Working Group
 **License**: Corridor-Grade Invariant License v1.0

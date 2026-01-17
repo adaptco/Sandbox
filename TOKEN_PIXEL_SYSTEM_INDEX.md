@@ -2,9 +2,9 @@
 
 ## Complete Specification Index
 
-**System Status**: `RATIFIED`  
-**Version**: `1.0.0`  
-**Ratification Date**: `2026-01-17T21:48:40Z`  
+**System Status**: `RATIFIED`
+**Version**: `1.0.0`
+**Ratification Date**: `2026-01-17T21:48:40Z`
 **System Hash**: `sha256:TPCI_SYSTEM_V1_0xF7A3`
 
 ---
@@ -33,7 +33,7 @@ The system introduces **corridor-grade invariants** that enable:
 
 ### 1. **Token Pixel Schema v1.0**
 
-**File**: `TOKEN_PIXEL_SCHEMA_V1.md`  
+**File**: `TOKEN_PIXEL_SCHEMA_V1.md`
 **Hash**: `sha256:TPX_SCHEMA_V1_0x1A2F`
 
 Defines the formal mathematical structure of token pixels.
@@ -64,7 +64,7 @@ Defines the formal mathematical structure of token pixels.
 
 ### 2. **Checkpointing Ritual v1.0**
 
-**File**: `CHECKPOINTING_RITUAL.md`  
+**File**: `CHECKPOINTING_RITUAL.md`
 **Hash**: `sha256:RITUAL_V1_0x3F8D`
 
 Formalizes the four-phase procedure for emitting token pixels.
@@ -97,7 +97,7 @@ Formalizes the four-phase procedure for emitting token pixels.
 
 ### 3. **Voxel-Tensor Mapping Specification v1.0**
 
-**File**: `VOXEL_TENSOR_MAPPING.md`  
+**File**: `VOXEL_TENSOR_MAPPING.md`
 **Hash**: `sha256:VOXEL_SPEC_V1_0x7B4C`
 
 Defines discretization of continuous phase-space manifold.
@@ -125,7 +125,7 @@ Defines discretization of continuous phase-space manifold.
 
 ### 4. **Replay Court Decoder v1.0**
 
-**File**: `REPLAY_COURT_DECODER.md`  
+**File**: `REPLAY_COURT_DECODER.md`
 **Hash**: `sha256:REPLAY_V1_0x9C2E`
 
 Enables deterministic trajectory reconstruction and analysis.
@@ -156,7 +156,7 @@ Enables deterministic trajectory reconstruction and analysis.
 
 ### 5. **CI/CD Integration Layer v1.0**
 
-**File**: `CICD_INTEGRATION_LAYER.md`  
+**File**: `CICD_INTEGRATION_LAYER.md`
 **Hash**: `sha256:CICD_INT_V1_0x5A7B`
 
 Embeds checkpointing into continuous deployment pipeline.
@@ -192,7 +192,7 @@ Embeds checkpointing into continuous deployment pipeline.
 
 ### 6. **Qube-Native Token Pixel Runtime v1.0**
 
-**File**: `QUBE_RUNTIME.md`  
+**File**: `QUBE_RUNTIME.md`
 **Hash**: `sha256:QUBE_RUNTIME_V1_0x2D9F`
 
 Minimal edge runtime for token pixel agents.
@@ -255,7 +255,7 @@ Token pixels are samples from this manifold, forming a discrete trajectory.
 
 Token pixels form an append-only ledger:
 
-```
+```text
 TPX_1 → TPX_2 → TPX_3 → ... → TPX_n
   ↓       ↓       ↓             ↓
 hash_1  hash_2  hash_3       hash_n
@@ -287,7 +287,7 @@ The system detects:
 
 ## 🔄 **Data Flow**
 
-```
+```text
 AGENT IN CI/CD PIPELINE
         ↓
 [Ingestion] → Token Pixel #1
@@ -480,18 +480,18 @@ All specifications in this system are ratified under the Corridor-Grade Invarian
 
 ## 🏆 **System Status**
 
-✅ **Schema Formalized**: Token Pixel Schema v1.0  
-✅ **Ritual Canonicalized**: Checkpointing Ritual v1.0  
-✅ **Voxels Mapped**: Voxel-Tensor Mapping v1.0  
-✅ **Court Established**: Replay Court Decoder v1.0  
-✅ **CI/CD Integrated**: Integration Layer v1.0  
+✅ **Schema Formalized**: Token Pixel Schema v1.0
+✅ **Ritual Canonicalized**: Checkpointing Ritual v1.0
+✅ **Voxels Mapped**: Voxel-Tensor Mapping v1.0
+✅ **Court Established**: Replay Court Decoder v1.0
+✅ **CI/CD Integrated**: Integration Layer v1.0
 ✅ **Runtime Deployed**: Qube Runtime v1.0
 
 **System Readiness**: 🟢 **OPERATIONAL**
 
 ---
 
-**Specification Authority**: Token Pixel Corridor-Grade Invariant Committee  
-**Maintainer**: Agentic CI/CD Working Group  
-**Ratified**: 2026-01-17T21:48:40Z  
+**Specification Authority**: Token Pixel Corridor-Grade Invariant Committee
+**Maintainer**: Agentic CI/CD Working Group
+**Ratified**: 2026-01-17T21:48:40Z
 **Version**: 1.0.0

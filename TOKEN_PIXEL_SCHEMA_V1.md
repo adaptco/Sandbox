@@ -2,9 +2,9 @@
 
 ## Formal Specification for Audit-Ready, Replayable, Edge-Deployable State Snapshots
 
-**Status**: `CANONICAL`  
-**Version**: `1.0.0`  
-**Schema Hash**: `sha256:TPX_SCHEMA_V1_0x1A2F`  
+**Status**: `CANONICAL`
+**Version**: `1.0.0`
+**Schema Hash**: `sha256:TPX_SCHEMA_V1_0x1A2F`
 **Ratified**: `2026-01-17T21:48:40Z`
 
 ---
@@ -67,7 +67,7 @@ The agent's current tensor state in phase-space coordinates:
 
 A hierarchical address in the pipeline graph:
 
-```
+```text
 DISTRICT → CHAMBER → NODE
 ```
 
@@ -102,7 +102,7 @@ A normalized, hashed representation of the agent's active intent embedding.
 **Construction**:
 
 1. Extract intent vector `i ∈ ℝⁿ` from agent's current goal
- 2. Normalize: `î = i / |  | i |  | ₂` 
+ 2. Normalize: `î = i / |  | i |  | ₂`
 3. Quantize to fixed precision (8 decimal places)
 4. Hash: `H(î) = sha256(serialize(î))`
 
@@ -129,7 +129,7 @@ Reference to the last committed event in the AgentEvents lattice.
 
 **Lattice Structure**:
 
-```
+```text
 EventLattice := {E₁, E₂, ..., Eₙ}
   where E_i = (timestamp, agent_id, event_type, payload, hash)
 ```
@@ -154,8 +154,8 @@ A scalar `A ∈ [0, 1]` measuring deviation from programmed behavior.
 
 **Definition**:
 
-```
- A = |  | s_actual - s_expected |  | ₂ / |  | s_expected |  | ₂ 
+```text
+ A = |  | s_actual - s_expected |  | ₂ / |  | s_expected |  | ₂
 ```
 
 Where:
@@ -213,7 +213,7 @@ Cryptographic linkage forming an append-only, tamper-evident ledger.
 
 **Construction**:
 
-```
+```text
 H_t = sha256(concat(
   tokenPixelId,
   timestamp,
@@ -447,6 +447,6 @@ Hash chain provides tamper-evident log of all agent states.
 
 ---
 
-**Schema Authority**: Token Pixel Specification Committee  
-**Maintainer**: Agentic CI/CD Working Group  
+**Schema Authority**: Token Pixel Specification Committee
+**Maintainer**: Agentic CI/CD Working Group
 **License**: Corridor-Grade Invariant License v1.0

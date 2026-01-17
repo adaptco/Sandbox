@@ -2,9 +2,9 @@
 
 ## Canonicalization → Parity → Seal → Publish
 
-**Status**: `CANONICAL`  
-**Version**: `1.0.0`  
-**Ritual Hash**: `sha256:RITUAL_V1_0x3F8D`  
+**Status**: `CANONICAL`
+**Version**: `1.0.0`
+**Ritual Hash**: `sha256:RITUAL_V1_0x3F8D`
 **Ratified**: `2026-01-17T21:48:40Z`
 
 ---
@@ -60,7 +60,7 @@ def capture_state_vector(agent) -> StateVector:
     psi = compute_intent_alignment(agent)    # [0, 1]
     omega = compute_angular_velocity(agent)  # [0, ∞)
     tau = agent.corridor_time                # ℝ
-    
+
     return StateVector(phi, psi, omega, tau)
 ```
 
@@ -201,7 +201,7 @@ def verify_parity(canonical_state, prev_token_pixel=None) -> ParityResult:
         verify_p6_voxel(canonical_state),
         verify_p7_temporal(canonical_state, prev_token_pixel)
     ]
-    
+
     return ParityResult(
         passed=all(checks),
         checks=checks,
@@ -274,7 +274,7 @@ def compute_token_pixel_hash(token_pixel: TokenPixel) -> str:
         "voxelSignature": token_pixel.voxelSignature,
         "prevHash": token_pixel.prevHash
     }, sort_keys=True, separators=(',', ':'))
-    
+
     hash_digest = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
     return f"sha256:{hash_digest}"
 ```
@@ -351,22 +351,22 @@ Token pixel is now **immutable, public, and auditable**.
 ```python
 def checkpointing_ritual(agent: Agent, prev_token_pixel: Optional[TokenPixel] = None) -> TokenPixel:
     """Execute the full checkpointing ritual."""
-    
+
     # PHASE 1: CANONICALIZATION
     canonical_state = canonicalize_agent_state(agent)
-    
+
     # PHASE 2: PARITY CHECK
     parity_result = verify_parity(canonical_state, prev_token_pixel)
     if not parity_result.passed:
         agent.enter_quarantine()
         raise ParityCheckFailure(parity_result)
-    
+
     # PHASE 3: SEAL
     token_pixel = seal_token_pixel(canonical_state, agent, prev_token_pixel)
-    
+
     # PHASE 4: PUBLISH
     publish_token_pixel(token_pixel, agent)
-    
+
     return token_pixel
 ```
 
@@ -470,6 +470,6 @@ Parity checks detect malicious state corruption.
 
 ---
 
-**Ritual Authority**: Checkpointing Ritual Committee  
-**Maintainer**: Agentic CI/CD Working Group  
+**Ritual Authority**: Checkpointing Ritual Committee
+**Maintainer**: Agentic CI/CD Working Group
 **License**: Corridor-Grade Invariant License v1.0

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Markdown Lint Auto-Fixer
- * Fixes MD040 (fenced-code-language) and MD060 (table-column-style) issues
+ * Markdown Lint Auto-Fixer v2
+ * Fixes MD040, MD060, MD026, MD005, MD009, MD036 issues
  */
 
 const fs = require('fs');
@@ -44,11 +44,17 @@ class MarkdownLintFixer {
         // Fix MD060: Fix table column spacing
         content = this.fixTableColumns(content);
 
-        // Fix MD024: Handle duplicate headings (context-aware)
-        content = this.fixDuplicateHeadings(content, filename);
-
         // Fix MD036: Emphasis as heading
         content = this.fixEmphasisAsHeading(content);
+
+        // Fix MD026: Trailing punctuation in headings
+        content = this.fixTrailingPunctuation(content);
+
+        // Fix MD005: List indentation
+        content = this.fixListIndentation(content);
+
+        // Fix MD009: Trailing spaces
+        content = this.fixTrailingSpaces(content);
 
         if (content !== originalContent) {
             fs.writeFileSync(filepath, content, 'utf8');
@@ -60,31 +66,35 @@ class MarkdownLintFixer {
     }
 
     fixFencedCodeBlocks(content, filename) {
-        // Pattern: ``` without language specifier followed by newline
         const lines = content.split('\n');
         const result = [];
+        let inCodeBlock = false;
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
+            const trimmed = line.trim();
 
-            // Detect bare ``` at start of line
-            if (line.trim() === '```') {
-                // Check if it's a closing fence (previous fence was opening)
-                let isClosing = false;
-                for (let j = i - 1; j >= 0; j--) {
-                    if (lines[j].trim().startsWith('```')) {
-                        isClosing = true;
-                        break;
+            // Detect code fence
+            if (trimmed.startsWith('```')) {
+                if (!inCodeBlock) {
+                    // Opening fence
+                    const hasLang = trimmed.length > 3 && trimmed !== '```text' && trimmed !== '```';
+
+                    if (trimmed === '```') {
+                        // Add inferred language
+                        const lang = this.inferLanguage(lines, i, filename);
+                        const indent = line.match(/^(\s*)/)[1]; // Preserve indentation
+                        result.push(indent + '```' + lang);
+                        console.log(`  Fixed code block at line ${i + 1}: added language '${lang}'`);
+                        inCodeBlock = true;
+                    } else {
+                        result.push(line);
+                        inCodeBlock = true;
                     }
-                }
-
-                if (!isClosing) {
-                    // It's an opening fence without language - infer from context
-                    const lang = this.inferLanguage(lines, i, filename);
-                    result.push('```' + lang);
-                    console.log(`  Fixed code block at line ${i + 1}: added language '${lang}'`);
                 } else {
+                    // Closing fence
                     result.push(line);
+                    inCodeBlock = false;
                 }
             } else {
                 result.push(line);
@@ -96,20 +106,31 @@ class MarkdownLintFixer {
 
     inferLanguage(lines, fenceIndex, filename) {
         // Look ahead to infer language
-        const nextLines = lines.slice(fenceIndex + 1, fenceIndex + 5).join('\n');
+        const nextLines = lines.slice(fenceIndex + 1, fenceIndex + 10).join('\n');
+
+        // Check for mathematical notation
+        if (nextLines.match(/[∈∉⊂⊃∩∪∀∃φψωτ]/)) {
+            return 'text';  // Mathematical symbols
+        }
 
         // Check for common patterns
         if (nextLines.includes('TokenPixel') || nextLines.includes('StateVector')) {
-            return 'text';  // Pseudo-code/structure definitions
+            return 'text';  // Type definitions
         }
-        if (nextLines.includes('DISTRICT') || nextLines.includes('req_')) {
-            return 'text';  // Pipeline/request structures
+        if (nextLines.includes('DISTRICT') || nextLines.includes('CHAMBER')) {
+            return 'text';  // Pipeline structures
         }
-        if (nextLines.match(/^\w+ = /m)) {
-            return 'text';  // Mathematical notation
+        if (nextLines.includes('req_') || nextLines.includes('TPX_')) {
+            return 'text';  // Request/Token identifiers
         }
-        if (nextLines.includes('│') || nextLines.includes('┌') || nextLines.includes('└')) {
-            return 'text';  // ASCII diagrams
+        if (nextLines.match(/^\w+\s*[:=]/m)) {
+            return 'text';  // Pseudo-code assignments
+        }
+        if (nextLines.includes('│') || nextLines.includes('┌') || nextLines.includes('└') || nextLines.includes('─') || nextLines.includes('▼') || nextLines.includes('↓')) {
+            return 'text';  // ASCII diagrams/flowcharts
+        }
+        if (nextLines.match(/M\s*=\s*\{/)) {
+            return 'text';  // Mathematical set notation
         }
 
         // Default to text for specifications
@@ -123,23 +144,20 @@ class MarkdownLintFixer {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
 
-            // Detect table rows (contain |)
+            // Detect table rows (contain | but not in code blocks)
             if (line.includes('|') && !line.trim().startsWith('```')) {
                 // Fix spacing around pipes
-                const fixed = line
-                    .split('|')
-                    .map((cell, idx, arr) => {
-                        // Trim cell content
-                        const trimmed = cell.trim();
+                const parts = line.split('|');
+                const fixed = parts.map((cell, idx) => {
+                    const trimmed = cell.trim();
 
-                        // Skip empty cells at start/end
-                        if (idx === 0 && trimmed === '') return '';
-                        if (idx === arr.length - 1 && trimmed === '') return '';
+                    // Handle empty cells at start/end
+                    if (idx === 0 && trimmed === '') return '';
+                    if (idx === parts.length - 1 && trimmed === '') return '';
 
-                        // Add space padding
-                        return ` ${trimmed} `;
-                    })
-                    .join('|');
+                    // Add proper spacing
+                    return ` ${trimmed} `;
+                }).join('|');
 
                 result.push(fixed);
             } else {
@@ -150,25 +168,16 @@ class MarkdownLintFixer {
         return result.join('\n');
     }
 
-    fixDuplicateHeadings(content, filename) {
-        // For CHECKPOINTING_RITUAL.md, duplicate "Steps" headings are in different sections
-        // We'll leave these as-is since they're contextually different
-        // Markdown linters don't always understand document structure
-        return content;
-    }
-
     fixEmphasisAsHeading(content) {
-        // Fix **Bold text** that should be headings
         const lines = content.split('\n');
         const result = [];
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
 
-            // Detect standalone bold text that looks like a heading
+            // Detect standalone bold text that should be a heading
             if (line.match(/^\*\*[A-Z][^*]+\*\*\s*$/) &&
                 (i === 0 || lines[i - 1].trim() === '')) {
-                // Convert to heading
                 const text = line.replace(/\*\*/g, '').trim();
                 result.push(`### ${text}`);
                 console.log(`  Converted emphasis to heading: ${text}`);
@@ -180,8 +189,88 @@ class MarkdownLintFixer {
         return result.join('\n');
     }
 
+    fixTrailingPunctuation(content) {
+        const lines = content.split('\n');
+        const result = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Detect headings with trailing punctuation (except . which is OK)
+            if (line.match(/^#{1,6}\s+.+[:]$/)) {
+                const fixed = line.replace(/:$/, '');
+                result.push(fixed);
+                console.log(`  Removed trailing punctuation from heading`);
+            } else {
+                result.push(line);
+            }
+        }
+
+        return result.join('\n');
+    }
+
+    fixListIndentation(content) {
+        const lines = content.split('\n');
+        const result = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Detect list items with inconsistent indentation
+            const listMatch = line.match(/^(\s+)([-*+])\s+/);
+            if (listMatch) {
+                const indent = listMatch[1];
+                const marker = listMatch[2];
+
+                // Normalize to multiples of 2 spaces
+                const spaces = indent.length;
+                const normalizedSpaces = Math.floor(spaces / 2) * 2;
+
+                if (spaces !== normalizedSpaces) {
+                    const fixed = ' '.repeat(normalizedSpaces) + marker + line.substring(indent.length + marker.length + 1);
+                    result.push(fixed);
+                    console.log(`  Fixed list indentation at line ${i + 1}`);
+                } else {
+                    result.push(line);
+                }
+            } else {
+                result.push(line);
+            }
+        }
+
+        return result.join('\n');
+    }
+
+    fixTrailingSpaces(content) {
+        const lines = content.split('\n');
+        const result = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Remove trailing spaces (except 2 spaces for hard line breaks in markdown)
+            const trailingSpaces = line.match(/\s+$/);
+            if (trailingSpaces) {
+                const count = trailingSpaces[0].length;
+
+                // Keep exactly 2 spaces for hard breaks, remove others
+                if (count === 2) {
+                    result.push(line); // Already correct
+                } else {
+                    const fixed = line.trimEnd();
+                    result.push(fixed);
+                    console.log(`  Removed ${count} trailing spaces at line ${i + 1}`);
+                }
+            } else {
+                result.push(line);
+            }
+        }
+
+        return result.join('\n');
+    }
+
     fixAll() {
-        console.log('🔧 Markdown Lint Auto-Fixer\n');
+        console.log('🔧 Markdown Lint Auto-Fixer v2\n');
         console.log(`Processing ${MARKDOWN_FILES.length} files...\n`);
 
         MARKDOWN_FILES.forEach(file => this.fixFile(file));
