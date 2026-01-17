@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurassic Kart: PINN Drift</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+            border: 4px solid #333;
+            border-radius: 12px;
+        }
+
+        canvas {
+            background: #222;
+            display: block;
+            image-rendering: pixelated;
+            /* Essential for pixel art look */
+        }
+
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #0ff;
+            text-shadow: 2px 2px #000;
+            pointer-events: none;
+        }
+
+        #pinn-status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #0f0;
+            font-size: 12px;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .hud-bar {
+            height: 10px;
+            background: #333;
+            margin-top: 5px;
+            width: 150px;
+            border: 1px solid #555;
+        }
+
+        .hud-fill {
+            height: 100%;
+            background: #0ff;
+            width: 0%;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div id="ui-overlay">
+            <h1 style="margin: 0; font-size: 24px;">JURASSIC KART</h1>
+            <div style="font-size: 14px; color: #888;">PINN-DRIVEN DRIFT ENGINE</div>
+
+            <div style="margin-top: 20px;">
+                <div>VELOCITY</div>
+                <div class="hud-bar">
+                    <div id="vel-bar" class="hud-fill"></div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <div>DRIFT HEAT</div>
+                <div class="hud-bar">
+                    <div id="drift-bar" class="hud-fill" style="background: #f0f;"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; font-size: 12px;">
+                CONTROLS:<br>
+                [WASD] / [ARROWS] to Drive<br>
+                [SPACE] to Drift
+            </div>
+        </div>
+
+        <div id="pinn-status">
+            PINN STATUS: <span id="pinn-state">ACTIVE</span><br>
+            <span id="pinn-computation">0.02ms</span> / step
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Physics-Informed Neural Network (PINN) Proxy Model
+         * 
+         * Simulates a trained neural network that approximates complex non-linear 
+         * tire dynamics and vehicle physics.
+         * 
+         * Architecture: 
+         * - Input Layer: 6 neurons [vx, vy, angular_vel, steer, throttle, drift_factor]
+         * - Hidden Layer: tanh activation for non-linear tire saturation
+         * - Output Layer: 3 neurons [accel_x, accel_y, angular_accel]
+         */
+        class PINNDynamics {
+            constructor() {
+                // "Weights" derived from training on rapid vehicle maneuvers
+                this.weights = {
+                    tire_stiffness: 8.0,
+                    drift_decay: 0.95,
+                    traction_loss: 0.3
+                };
+
+                // State Vector: [x, y, heading, vx, vy, omega]
+                this.state = new Float32Array(6);
+            }
+
+            // The "Forward Pass" - simulating NN inference
+            predict(dt, controls) {
+                const [x, y, heading, vx, vy, omega] = this.state;
+                const { throttle, steer, drift } = controls;
+
+                // 1. Normalize Inputs (Input Layer)
+                const speed = Math.sqrt(vx * vx + vy * vy);
+                const slip_angle = Math.atan2(vy, Math.abs(vx) + 0.1) - (vx > 0 ? 0 : Math.PI);
+                const lateral_force_demand = steer * speed;
+
+                // 2. Hidden Layer Activations (Physics-Informed Kernels)
+                // Tanh replicates tire saturation curve (Pacejka Magic Formula approx)
+                const grip_factor = drift ? this.weights.traction_loss : 1.0;
+
+                // Lateral friction (Corning force)
+                // F_lat = -stiffness * tanh(slip_angle)
+                const f_lat_rear = -this.weights.tire_stiffness * Math.tanh(slip_angle * 2.0) * grip_factor;
+                const f_lat_front = -this.weights.tire_stiffness * Math.tanh((slip_angle - steer) * 2.0);
+
+                // Longitudinal force (Engine + Drag)
+                const drag = -0.05 * speed * speed * Math.sign(vx);
+                const engine = throttle * 15.0;
+                const f_long = engine + drag;
+
+                // 3. Torque Dynamics (Rotational Matrix)
+                const torque = (f_lat_front - f_lat_rear * 0.8) + (drift ? steer * 2.0 : 0);
+
+                // 4. Output Layer (Integrator)
+                // Local to World Transform
+                const cos_h = Math.cos(heading);
+                const sin_h = Math.sin(heading);
+
+                // Local Accelerations
+                const ax_local = f_long;
+                const ay_local = f_lat_rear + f_lat_front; // Simplified mass aggregation
+
+                // World Update
+                const vx_next = vx + (ax_local * cos_h - ay_local * sin_h) * dt;
+                const vy_next = vy + (ax_local * sin_h + ay_local * cos_h) * dt;
+                const omega_next = omega * 0.90 + torque * dt; // Damped angular velocity
+
+                // Update State
+                this.state[0] += vx_next * dt; // x
+                this.state[1] += vy_next * dt; // y
+                this.state[2] += omega_next * dt; // heading
+                this.state[3] = vx_next * 0.98; // Friction damping
+                this.state[4] = vy_next * 0.98;
+                this.state[5] = omega_next;
+
+                return this.state;
+            }
+
+            setState(x, y) {
+                this.state[0] = x;
+                this.state[1] = y;
+            }
+        }
+
+        // --- Game Engine ---
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const pinn = new PINNDynamics();
+        pinn.setState(400, 300);
+
+        const car = {
+            color: '#0ff',
+            width: 20,
+            height: 32,
+            trail: []
+        };
+
+        const controls = {
+            throttle: 0,
+            steer: 0,
+            drift: false
+        };
+
+        // Procedural Track ("Latent Space Raceway")
+        const trackPoints = [];
+        for (let i = 0; i < Math.PI * 2; i += 0.2) {
+            const r = 200 + Math.sin(i * 5) * 50 + Math.cos(i * 3) * 30;
+            trackPoints.push({
+                x: 400 + Math.cos(i) * r,
+                y: 300 + Math.sin(i) * r
+            });
+        }
+
+        // Input Handling
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+        function updateInput() {
+            // Throttle
+            if (keys['w'] || keys['arrowup']) controls.throttle = 1;
+            else if (keys['s'] || keys['arrowdown']) controls.throttle = -0.5;
+            else controls.throttle = 0;
+
+            // Steering
+            if (keys['a'] || keys['arrowleft']) controls.steer = -1;
+            else if (keys['d'] || keys['arrowright']) controls.steer = 1;
+            else controls.steer = 0;
+
+            // Drift
+            controls.drift = keys[' '] || false;
+        }
+
+        // Rendering
+        function drawCar(x, y, heading) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(heading + Math.PI / 2); // Align up
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(-car.width / 2 + 5, -car.height / 2 + 5, car.width, car.height);
+
+            // Body
+            ctx.fillStyle = controls.drift ? '#f0f' : car.color;
+            ctx.fillRect(-car.width / 2, -car.height / 2, car.width, car.height);
+
+            // Windshield
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-car.width / 2 + 2, -car.height / 2 + 5, car.width - 4, 8);
+
+            ctx.restore();
+        }
+
+        function drawTrack() {
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 80;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            trackPoints.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+
+            // Inner line
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([20, 20]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawTrail() {
+            ctx.lineWidth = 4;
+            for (let i = 0; i < car.trail.length - 1; i++) {
+                const alpha = i / car.trail.length;
+                ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * 0.5})`;
+                ctx.beginPath();
+                ctx.moveTo(car.trail[i].x, car.trail[i].y);
+                ctx.lineTo(car.trail[i + 1].x, car.trail[i + 1].y);
+                ctx.stroke();
+            }
+        }
+
+        // Loop
+        let lastTime = 0;
+        function loop(timestamp) {
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.1); // Cap dt
+            lastTime = timestamp;
+
+            updateInput();
+
+            // PINN Inference
+            const t0 = performance.now();
+            const state = pinn.predict(dt, controls);
+            const computeTime = performance.now() - t0;
+
+            // Update UI
+            document.getElementById('pinn-computation').textContent = computeTime.toFixed(3) + "ms";
+            const speed = Math.sqrt(state[3] ** 2 + state[4] ** 2);
+            document.getElementById('vel-bar').style.width = Math.min(speed * 3, 100) + "%";
+            document.getElementById('drift-bar').style.width = controls.drift ? "100%" : "0%";
+
+            // Trail
+            if (speed > 5) {
+                car.trail.push({ x: state[0], y: state[1] });
+                if (car.trail.length > 50) car.trail.shift();
+            }
+
+            // Camera follow (simple offset)
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            // Center car
+            ctx.translate(canvas.width / 2 - state[0], canvas.height / 2 - state[1]);
+
+            drawTrack();
+            drawTrail();
+            drawCar(state[0], state[1], state[2]);
+
+            ctx.restore();
+
+            requestAnimationFrame(loop);
+        }
+
+        requestAnimationFrame(loop);
+
+    </script>
+</body>
+
+</html>
